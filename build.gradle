@@ -13,11 +13,14 @@ buildscript {
 
     repositories {
         jcenter()
+        maven { url "https://dl.bintray.com/arrow-kt/arrow-kt/" }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
+	 classpath 'io.arrow-kt:ank-gradle-plugin:0.7.1'
+
     }
 }
 
@@ -26,6 +29,7 @@ subprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
         maven { url "https://kotlin.bintray.com/kotlinx" }
+   maven { url "https://dl.bintray.com/jetbrains/markdown/" }
     }
 
     apply plugin: "kotlin"

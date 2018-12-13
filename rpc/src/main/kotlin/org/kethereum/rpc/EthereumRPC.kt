@@ -13,6 +13,14 @@ import org.kethereum.rpc.model.BlockNumberResponse
 
 val JSONMediaType: MediaType = MediaType.parse("application/json")!!
 
+interface EthereumRPCTransport {
+    fun call(request: String): String
+}
+
+class EthereumRPCTransportHTTP(val baseURL: String, private val okhttp: OkHttpClient = OkHttpClient().newBuilder().build()) {
+
+}
+
 class EthereumRPC(val baseURL: String, private val okhttp: OkHttpClient = OkHttpClient().newBuilder().build()) {
 
     private val moshi = Moshi.Builder().build().newBuilder().add(BigIntegerAdapter()).build()
@@ -27,7 +35,7 @@ class EthereumRPC(val baseURL: String, private val okhttp: OkHttpClient = OkHttp
 
     private fun buildRequest(body: RequestBody) = Request.Builder().url(baseURL)
             .method("POST", body)
-            .build()!!
+            .build()
 
     fun getBlockNumberString() = okhttp.newCall(buildBlockRequest()).execute().body().use { body ->
         body?.source()?.use { blockNumberAdapter.fromJson(it) }
