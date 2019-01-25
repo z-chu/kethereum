@@ -1,8 +1,8 @@
 package org.kethereum.crypto.api.ec
 
-import org.kethereum.crypto.model.ECKeyPair
-import org.kethereum.crypto.model.PrivateKey
-import org.kethereum.crypto.model.PublicKey
+import org.kethereum.model.ECKeyPair
+import org.kethereum.model.PrivateKey
+import org.kethereum.model.PublicKey
 import org.spongycastle.crypto.generators.ECKeyPairGenerator
 import org.spongycastle.crypto.params.ECKeyGenerationParameters
 import org.spongycastle.crypto.params.ECPrivateKeyParameters
@@ -10,9 +10,9 @@ import org.spongycastle.crypto.params.ECPublicKeyParameters
 import java.math.BigInteger
 import java.util.*
 
-object EllipticCurveKeyPairGenerator : KeyPairGenerator {
+class EllipticCurveKeyPairGenerator : KeyPairGenerator {
     override fun generate() = ECKeyPairGenerator().run {
-        init(ECKeyGenerationParameters(EllipticCurve.domainParams, null))
+        init(ECKeyGenerationParameters(DOMAIN_PARAMS, null))
         generateKeyPair().run {
             val privateKeyValue = (private as ECPrivateKeyParameters).d
             val publicKeyBytes = (public as ECPublicKeyParameters).q.getEncoded(false)

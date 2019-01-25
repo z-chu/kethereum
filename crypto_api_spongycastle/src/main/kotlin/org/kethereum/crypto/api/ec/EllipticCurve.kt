@@ -4,20 +4,20 @@ import org.spongycastle.crypto.ec.CustomNamedCurves
 import org.spongycastle.crypto.params.ECDomainParameters
 import java.math.BigInteger
 
-object EllipticCurve: Curve {
-    val curveParams = CustomNamedCurves.getByName("secp256k1")!!
+internal val CURVE_PARAMS by lazy { CustomNamedCurves.getByName("secp256k1")!! }
+internal val DOMAIN_PARAMS = CURVE_PARAMS.run { ECDomainParameters(curve, g, n, h) }
 
-    internal val domainParams = curveParams.run { ECDomainParameters(curve, g, n, h) }
+class EllipticCurve : Curve {
 
     override val n: BigInteger
-        get() = curveParams.n
+        get() = CURVE_PARAMS.n
 
     override val g: CurvePoint
-        get() = curveParams.g.toCurvePoint()
+        get() = CURVE_PARAMS.g.toCurvePoint()
 
     override fun decodePoint(data: ByteArray): CurvePoint =
-        curveParams.curve.decodePoint(data).toCurvePoint()
+            CURVE_PARAMS.curve.decodePoint(data).toCurvePoint()
 
     override fun createPoint(x: BigInteger, y: BigInteger): CurvePoint =
-        curveParams.curve.createPoint(x, y).toCurvePoint()
+            CURVE_PARAMS.curve.createPoint(x, y).toCurvePoint()
 }

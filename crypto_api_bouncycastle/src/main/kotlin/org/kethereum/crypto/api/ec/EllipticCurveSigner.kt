@@ -12,7 +12,7 @@ import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve
 import java.math.BigInteger
 import java.util.*
 
-object EllipticCurveSigner : Signer {
+class EllipticCurveSigner : Signer {
 
     override fun sign(transactionHash: ByteArray, privateKey: BigInteger): ECDSASignature {
         val signer = ECDSASigner(HMacDSAKCalculator(SHA256Digest()))

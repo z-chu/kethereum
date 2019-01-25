@@ -12,17 +12,24 @@ import org.spongycastle.math.ec.custom.sec.SecP256K1Curve
 import java.math.BigInteger
 import java.util.*
 
-object EllipticCurveSigner : Signer {
+class EllipticCurveSigner : Signer {
 
-    override fun sign(transactionHash: ByteArray, privateKey: BigInteger): ECDSASignature {
+    override fun sign(transactionHash: ByteArray, privateKey: BigInteger, canonical: Boolean): ECDSASignature {
         val signer = ECDSASigner(HMacDSAKCalculator(SHA256Digest()))
 
-        val ecPrivateKeyParameters = ECPrivateKeyParameters(privateKey, EllipticCurve.domainParams)
+        val ecPrivateKeyParameters = ECPrivateKeyParameters(privateKey, DOMAIN_PARAMS)
         signer.init(true, ecPrivateKeyParameters)
         val components = signer.generateSignature(transactionHash)
 
-        return ECDSASignature(components[0], components[1])
+        return ECDSASignature(components[0], components[1]).let {
+            if (canonical) {
+                it.canonicalise()
+            } else {
+                it
+            }
+        }
     }
+
 
     /**
      *
@@ -58,7 +65,7 @@ object EllipticCurveSigner : Signer {
 
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        val n = EllipticCurve.n  // Curve order.
+        val n = CURVE_PARAMS.n  // Curve order.
         val i = BigInteger.valueOf(recId.toLong() / 2)
         val x = sig.r.add(i.multiply(n))
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion
@@ -101,7 +108,7 @@ object EllipticCurveSigner : Signer {
         val rInv = sig.r.modInverse(n)
         val srInv = rInv.multiply(sig.s).mod(n)
         val eInvrInv = rInv.multiply(eInv).mod(n)
-        val q = ECAlgorithms.sumOfTwoMultiplies(EllipticCurve.domainParams.g, eInvrInv, r, srInv)
+        val q = ECAlgorithms.sumOfTwoMultiplies(CURVE_PARAMS.g, eInvrInv, r, srInv)
 
         val qBytes = q.getEncoded(false)
         // We remove the prefix
@@ -111,9 +118,9 @@ object EllipticCurveSigner : Signer {
     /** Decompress a compressed public key (x co-ord and low-bit of y-coord).  */
     private fun decompressKey(xBN: BigInteger, yBit: Boolean): ECPoint {
         val x9 = X9IntegerConverter()
-        val compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(EllipticCurve.domainParams.curve))
+        val compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(CURVE_PARAMS.curve))
         compEnc[0] = (if (yBit) 0x03 else 0x02).toByte()
-        return EllipticCurve.domainParams.curve.decodePoint(compEnc)
+        return DOMAIN_PARAMS.curve.decodePoint(compEnc)
     }
 
     override fun publicFromPrivate(privateKey: BigInteger): BigInteger {
@@ -132,12 +139,12 @@ object EllipticCurveSigner : Signer {
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        val postProcessedPrivateKey = if (privateKey.bitLength() > EllipticCurve.n.bitLength()) {
-            privateKey.mod(EllipticCurve.domainParams.n)
+        val postProcessedPrivateKey = if (privateKey.bitLength() > CURVE_PARAMS.n.bitLength()) {
+            privateKey.mod(DOMAIN_PARAMS.n)
         } else {
             privateKey
         }
-        return FixedPointCombMultiplier().multiply(EllipticCurve.domainParams.g, postProcessedPrivateKey)
+        return FixedPointCombMultiplier().multiply(DOMAIN_PARAMS.g, postProcessedPrivateKey)
     }
 
 }

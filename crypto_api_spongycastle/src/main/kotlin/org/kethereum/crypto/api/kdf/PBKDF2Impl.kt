@@ -8,7 +8,7 @@ import org.spongycastle.crypto.digests.SHA512Digest
 import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.spongycastle.crypto.params.KeyParameter
 
-object PBKDF2Impl : PBKDF2 {
+class PBKDF2Impl : PBKDF2 {
 
     override fun derive(pass: ByteArray, salt: ByteArray?, iterations: Int, digestParams: DigestParams): ByteArray {
         val gen = PKCS5S2ParametersGenerator(digestParams.toDigest())

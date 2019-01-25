@@ -10,7 +10,7 @@ import org.kethereum.crypto.model.PublicKey
 import java.math.BigInteger
 import java.util.*
 
-object EllipticCurveKeyPairGenerator : KeyPairGenerator {
+class EllipticCurveKeyPairGenerator : KeyPairGenerator {
     override fun generate() = ECKeyPairGenerator().run {
         init(ECKeyGenerationParameters(EllipticCurve.domainParams, null))
         generateKeyPair().run {

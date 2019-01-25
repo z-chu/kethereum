@@ -4,7 +4,7 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import java.math.BigInteger
 
-object EllipticCurve: Curve {
+class EllipticCurve: Curve {
     val curveParams = CustomNamedCurves.getByName("secp256k1")!!
 
     internal val domainParams = curveParams.run { ECDomainParameters(curve, g, n, h) }
