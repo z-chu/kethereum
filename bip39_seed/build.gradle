@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(path: ':bip32')
+    implementation project(path: ':bip39')
+    implementation project(path: ':crypto_api')
+
+    testImplementation "com.github.walleth:khex:$khex_version"
+    testImplementation project(path: ':bip39_wordlists')
+    testImplementation project(path: ':crypto_impl_spongycastle')
+}

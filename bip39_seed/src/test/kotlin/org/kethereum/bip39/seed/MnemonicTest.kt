@@ -1,10 +1,9 @@
-package org.kethereum.bip39
+package org.kethereum.bip39.seed
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.kethereum.bip32.model.Seed
 import org.kethereum.bip39.model.MnemonicWords
-import org.kethereum.bip39.wordlists.wordListOfEnglish
 import org.walleth.khex.hexToByteArray
 
 /**
@@ -14,83 +13,29 @@ import org.walleth.khex.hexToByteArray
  */
 class MnemonicTest {
 
-    private val WORDLIST_ENGLISH= wordListOfEnglish()
-
     @Test
-    fun throwsOnWrongEntropySize() {
-        assertThrows(IllegalArgumentException::class.java) {
-            generateMnemonic(123, WORDLIST_ENGLISH)
-        }
-    }
-
-    @Test
-    fun generatesValidPhrases() {
-
-        (1..100).forEach {
-            (1..16).map { generateMnemonic(it * 32, WORDLIST_ENGLISH) }
-                    .forEach {
-                        val isValid = MnemonicWords(it).validate(WORDLIST_ENGLISH)
-                        if (!isValid) {
-                            throw RuntimeException("failed to validate $it")
-                        }
-                    }
-        }
-    }
-
-    @Test
-    fun throwsOnWrongNumberOfWords() {
-        assertThrows(IllegalArgumentException::class.java) {
-            mnemonicToEntropy("legal winner thank year", WORDLIST_ENGLISH)
-        }
-    }
-
-    @Test
-    fun throwsOnEmptyString() {
-        assertThrows(IllegalArgumentException::class.java) {
-            mnemonicToEntropy("", WORDLIST_ENGLISH)
-        }
-    }
-
-    @Test
-    fun throwsOnWrongChecksum() {
-        assertThrows(IllegalArgumentException::class.java) {
-            mnemonicToEntropy("legal winner thank year wave sausage worth useful legal winner thank thank", WORDLIST_ENGLISH)
-        }
-    }
-
-
-
-    @Test
-    fun mnemonicToEntropy() {
+    fun mnemonicToSeed() {
         testData.forEach {
 
-            val expectedEntropy = it.entropy.hexToByteArray()
-            val actualEntropy = mnemonicToEntropy(it.phrase, WORDLIST_ENGLISH)
+            val expectedSeed = Seed(it.seed.hexToByteArray())
+            val actualSeed = MnemonicWords(it.phrase).toSeed("TREZOR")
 
-            assertThat(expectedEntropy).isEqualTo(actualEntropy)
+            assertThat(expectedSeed.seed).isEqualTo(actualSeed.seed)
         }
+
     }
 
+
+
     @Test
-    fun entropyToMnemonic() {
+    fun mnemonicToMasterKey() {
         testData.forEach {
-            val entropy = it.entropy.hexToByteArray()
-            val actualPhrase = entropyToMnemonic(entropy, WORDLIST_ENGLISH)
-
-            assertThat(it.phrase).isEqualTo(actualPhrase)
+            val gen = MnemonicWords(it.phrase).toKey("m/", "TREZOR")
+            assertThat(it.masterKey).isEqualTo(gen.serialize())
         }
+
     }
 
-    @Test
-    fun mnemonicVerify() {
-        val phraseGood = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-        val badChecksum = "about about about about about about about about about about about about"
-        val missingWords = "hello world"
-
-        assertThat(MnemonicWords(phraseGood).validate(WORDLIST_ENGLISH)).isTrue()
-        assertThat(MnemonicWords(badChecksum).validate(WORDLIST_ENGLISH)).isFalse()
-        assertThat(MnemonicWords(missingWords).validate(WORDLIST_ENGLISH)).isFalse()
-    }
 
     data class MnemonicTestData(val entropy: String, val phrase: String, val seed: String, val masterKey: String)
 
